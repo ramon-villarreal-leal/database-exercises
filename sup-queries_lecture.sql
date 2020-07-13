@@ -1,14 +1,20 @@
-# sub query lecture
+# SUB-QUERY LECTURE
 
-SELECT column_a, column_b, column_c
-FROM table_a
-WHERE column_a IN (
-    SELECT column_a
-    FROM table_b
-    WHERE column_b = true
-);
+# SELECT column_a, column_b, column_c
+# FROM table_a
+# WHERE column_a IN (
+#     SELECT column_a
+#     FROM table_b
+#     WHERE column_b IN (
+#         SELECT column_a
+#         FROM table_c
+#         WHERE column_b = true
+#     )
+# );
 
-use employees;
+# Employees Table Example
+# Get department number and name for department where name is 'Customer Service'
+USE employees;
 
 SELECT dept_no
 FROM departments
@@ -20,81 +26,85 @@ WHERE dept_no = (
     SELECT dept_no
     FROM departments
     WHERE dept_name = 'Customer Service'
-    );
+);
 
-select
+# Department Manager employee number of Sales Department
 SELECT emp_no
-from dept_manager
-WHERE dept_no in (
-    select dept_no
-    from departments
-    where dept_name = 'Sales'
+FROM dept_manager
+WHERE dept_no IN (
+    SELECT dept_no              #
+    FROM departments            # }
+    WHERE dept_name = 'Sales'   #
+)
+  AND to_date > NOW();
 
-    )
-        AND  to_date > NOW();
-
-select CONCAT(
+# concatenate the first two employee's highest salaries
+SELECT CONCAT(
                (
-               SELECT MAX(salary)
-               from salaries
-               WHERE emp_no = 10001
-           ),
-            ' ',
-            (
                    SELECT MAX(salary)
-                   from salaries
+                   FROM salaries
+                   WHERE emp_no = 10001
+               ),
+               ' ',
+               (
+                   SELECT MAX(salary)
+                   FROM salaries
                    WHERE emp_no = 10002
-                   )
+               )
            ) AS Salaries;
 
-# Find first and last name of all department managers
-# with join
-select emp.first_name, emp.last_name
-from employees as emp
-join dept_manager AS dm ON dm.emp_no = emp.emp_no;
+# Find the first/last name of all department managers
+SELECT emp.first_name, emp.last_name
+FROM employees AS emp
+         JOIN dept_manager AS dm ON dm.emp_no = emp.emp_no;
 
-# with sub-query
 SELECT first_name, last_name
-from employees
-where emp_no IN (
-    select emp_no
-    from dept_manager
-    );
-
-# names of employees with the 10 highest salaries
-SELECT emp_no, salary
-from salaries
-where to_date > NOW()
-order by salary desc;
-
-
-select first_name, last_name, salaries.salary
-from salaries
-join employees on employees.emp_no = salaries.emp_no
-where employees.emp_no IN (
+FROM employees
+WHERE emp_no IN (
     SELECT emp_no
-    from salaries
-    where to_date > NOW()
-    order by salary desc
-    )
-order by salaries.salary desc
+    FROM dept_manager
+);
+
+# get the names of employees with the ten highest salaries
+-- first, find the list of the employees with the highest current salaries
+-- Emp. No | Salary
+SELECT emp_no, salary
+FROM salaries
+WHERE to_date > NOW()
+ORDER BY salary DESC;
+
+SELECT employees.first_name, employees.last_name, salaries.salary
+FROM salaries
+         JOIN employees ON employees.emp_no = salaries.emp_no
+WHERE employees.emp_no IN (
+    SELECT emp_no
+    FROM salaries
+    WHERE to_date > NOW()
+    ORDER BY salary DESC
+)
+ORDER BY salaries.salary DESC
 LIMIT 10;
 
 SELECT CONCAT(
-    (
-        SELECT CONCAT(first_name, ' ', last_name)
-        from employees
-        where emp_no = 10001
-        ),
-    'works in a department',
-   (
-        select dept_name
-       from departments
-       where dept_no = 'd005'
-
-        ),
-        '.',
+               (
+                   SELECT CONCAT(first_name, ' ', last_name)
+                   FROM employees
+                   WHERE emp_no = 10001
+               ),
+               ' works in a department called ',
+               (
+                   SELECT dept_name
+                   FROM departments
+                   WHERE dept_no = 'd005'
+               ),
+               '.'
            );
 
-
-
+# name and hire_date of earliest-hired department employees
+SELECT first_name, hire_date
+FROM employees
+WHERE emp_no IN (
+    SELECT emp_no
+    FROM dept_emp
+    WHERE from_date = (SELECT MIN(from_date) FROM dept_emp)
+);

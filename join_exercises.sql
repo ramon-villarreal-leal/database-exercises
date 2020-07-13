@@ -94,11 +94,31 @@ ORDER BY dept.dept_name;
 
 
 
+# Find the current titles of employees currently working in the Customer Service department.
 
-SELECT CONCAT(e.first_name, ' ', e.last_name) AS Full_name, d.dept_name
-FROM employees as e
-         JOIN dept_emp as de
-              ON de.emp_no = e.emp_no
-         JOIN departments as d
-              ON d.dept_no = de.dept_no
-WHERE de.to_date = '9999-01-01' AND e.emp_no = 10001;
+SELECT titles.title AS Title, COUNT(dept_emp.emp_no) AS Count
+FROM departments
+         JOIN dept_emp ON dept_emp.dept_no = departments.dept_no
+         JOIN titles ON titles.emp_no = dept_emp.emp_no
+WHERE departments.dept_name = 'Customer Service' AND titles.to_date = '9999-01-01' AND dept_emp.to_date = '9999-01-01'
+GROUP BY Title;
+
+# second way to do above
+
+SELECT titles.title AS Title, COUNT(dept_emp.emp_no) AS Count
+FROM titles
+         JOIN dept_emp ON dept_emp.emp_no = titles.emp_no
+         JOIN departments ON dept_emp.dept_no = departments.dept_no
+WHERE departments.dept_name = 'Customer Service' AND titles.to_date = '9999-01-01' AND dept_emp.to_date = '9999-01-01'
+GROUP BY Title;
+
+
+# Find the current salary of all current managers.
+
+SELECT departments.dept_name AS 'Department Name', CONCAT(emp.first_name, ' ', emp.last_name) AS 'Name', salaries.salary AS 'Salary'
+FROM departments
+         JOIN dept_manager AS dm ON departments.dept_no = dm.dept_no
+         JOIN employees AS emp ON emp.emp_no = dm.emp_no
+         JOIN salaries ON emp.emp_no = salaries.emp_no
+WHERE dm.to_date LIKE '9999%' AND salaries.to_date LIKE '9999%'
+ORDER BY departments.dept_name;
