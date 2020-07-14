@@ -3,7 +3,12 @@ USE employees;
 SHOW TABLES;
 
 SELECT *
-FROM employees;
+FROM employees
+LIMIT 5 offset 10;
+
+SELECT first_name, last_name
+FROM employees
+ORDER BY last_name;
 
 SELECT emp_no, first_name, last_name
 FROM employees
